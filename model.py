@@ -1,10 +1,17 @@
 """Models and database functions for Task Manager project."""
+
  
 from flask_sqlalchemy import SQLAlchemy
  
+=======
+
+from flask_sqlalchemy import SQLAlchemy
+
+>>>>>>> upstream/master
 db = SQLAlchemy()
 
 import datetime
+
 
  ##############################################################################
  
@@ -18,6 +25,19 @@ class User(db.Model):
     user_id = db.Column(db.Integer,
                      autoincrement=True,
                      primary_key=True)
+=======
+
+##############################################################################
+# Model definitions
+class User(db.Model):
+    """User of website."""
+
+    __tablename__ = "users"
+
+    user_id = db.Column(db.Integer,
+                        autoincrement=True,
+                        primary_key=True)
+>>>>>>> upstream/master
     username = db.Column(db.String(64), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     profile_img = db.Column(db.String(200), nullable=True)
@@ -26,6 +46,7 @@ class User(db.Model):
     phone_number = db.Column(db.Integer, nullable=True)
 
     def __repr__(self):
+
      """Provide helpful representation when printed."""
 
     return "<User user_id=%s username=%s email=%s>" % (self.user_id,
@@ -38,6 +59,21 @@ class User(db.Model):
     #Define relationship projects table
     goal = db.relationship("Goal",
                                backref=db.backref("users"))
+=======
+        """Provide helpful representation when printed."""
+
+        return "<User user_id=%s username=%s email=%s>" % (self.user_id,
+                                                           self.username,
+                                                           self.email)
+
+    #Define relationship with tasks table
+    tasks = db.relationship("Task",
+                            backref=db.backref("users"))
+
+    #Define relationship with projects table
+    goal = db.relationship("Goal",
+                           backref=db.backref("users"))
+>>>>>>> upstream/master
 
     @classmethod
     def create_user(cls, email, username, password):
@@ -61,10 +97,15 @@ class User(db.Model):
 
 
 
+
     def check_by_userid(cls,user_id):
+=======
+    def check_by_userid(cls, user_id):
+>>>>>>> upstream/master
         """Search user table by user_id"""
 
         return cls.query.filter(cls.user_id == user_id).one()
+
 
 
 
@@ -88,6 +129,24 @@ class Goal(db.Model):
     user = db.relationship('User', backref='goals')
 
 
+=======
+class Goal(db.Model):
+    """Goals for an individual user of website."""
+
+    __tablename__ = "goals"
+
+    goal_id = db.Column(db.Integer,
+                        primary_key=True,
+                        autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    description = db.Column(db.Text, nullable=False)
+    date_started = db.Column(db.DateTime(timezone=True), nullable=False, default=make_timestamp)  # UTC timezone date/time stamp.
+    active_goal = db.Column(db.Boolean, nullable=False, default=True)
+    time_toachieve = db.Column(db.String(50), nullable=False)  # expected response month ,day, year, quarter, 6months
+
+    user = db.relationship('User', backref='goals')
+
+>>>>>>> upstream/master
     @classmethod
     def check_by_user_id(cls, user_id):
         """Checks goal table, to ensure goal isnt already there"""
@@ -103,6 +162,9 @@ class Goal(db.Model):
 
 
 
+
+=======
+>>>>>>> upstream/master
 class Task(db.Model):
     """Tasks for goals """
 
@@ -111,12 +173,20 @@ class Task(db.Model):
     task_id = db.Column(db.Integer, primary_key=True)
     task_name = db.Column(db.String, nullable=False)
     due_date = db.Column(db.Date, nullable=False)
+
     priority = db.Column(db.Integer, nullable=False) #can have value from 1 to 10
     date_added = db.Column(db.Date, default=datetime.datetime.utcnow())
     open_close_status = db.Column(db.Integer) #will have value 1 or 0 ,1 default for open tasks, 0 for closed tasks
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     task_frequency = db.Column(db.String(50), nullable=False) #daily, weekly,monthly
     taskcat_name = db.Column(db.String(50), nullable=False) #task category as dropdown, request.form.get
+=======
+    priority = db.Column(db.Integer, nullable=False)  # can have value from 1 to 10
+    date_added = db.Column(db.Date, default=datetime.datetime.utcnow())
+    open_close_status = db.Column(db.Integer)  # will have value 1 or 0 ,1 default for open tasks, 0 for closed tasks
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    task_frequency = db.Column(db.String(50), nullable=False)
+>>>>>>> upstream/master
 
     def __init__(self, task_name, due_date, priority, date_added, open_close_status, user_id):
         self.task_name = task_name
@@ -131,6 +201,7 @@ class Task(db.Model):
 
 
 
+
     def open_tasks():
         return db.session.query(Task).filter_by(open_close_status='1').order_by(Task.due_date.asc())
 
@@ -139,6 +210,14 @@ class Task(db.Model):
         return db.session.query(Task).filter_by(open_close_status='0').order_by(Task.due_date.asc())
 
 
+=======
+    def open_tasks():
+        return db.session.query(Task).filter_by(open_close_status='1').order_by(Task.due_date.asc())
+
+    def closed_tasks():
+        return db.session.query(Task).filter_by(open_close_status='0').order_by(Task.due_date.asc())
+
+>>>>>>> upstream/master
     user = db.relationship('User', backref='tasks')
 
 
@@ -149,13 +228,18 @@ class Reminders(db.Model):
 
     reminder_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.goal_id'))
+<<<<<<< HEAD
     text_reminder = db.Column(db.String(5), nullable=True) #if we want to use twilio for texts and mailgun for emails 
+=======
+    text_reminder = db.Column(db.String(5), nullable=True)  # if we want to use twilio for texts and mailgun for emails
+>>>>>>> upstream/master
     email_reminder = db.Column(db.String(5), nullable=True)
 
     goal = db.relationship('Goal', backref='reminders')
     user = db.relationship('User', secondary='goals', backref='reminders')
 
     def __repr__(self):
+
 
         return "<reminder_id=%s goal_id=%>" % (self.reminder_id, self.goal_id)
 
@@ -188,8 +272,54 @@ class GoalCompletion(db.Model):
 # class LinkGoalTask(db.Model):
 # """Association Model to connect Goals and Categories"""
 
+=======
+        return "<reminder_id=%s goal_id=%>" % (self.reminder_id,
+                                               self.goal_id)
+
+
+class TaskCategory(db.Model):
+    """Task categories for the goals"""
+
+    __tablename__ = "taskcategories"
+
+    taskcat_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    taskcat_name = db.Column(db.String(50), nullable=False)
+
+    tasks = db.relationship('Task', backref='taskcategories')
+
+    def __repr__(self):
+
+        return "<taskcat_id=%s taskcat_name=%s>" % (self.taskcat_id, self.taskcat_name)
+
+
+class GoalCategory(db.Model):
+    """Goal categories for the user"""
+
+    __tablename__ = "goalcategories"
+
+    goalcat_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    goalcat_name = db.Column(db.String(50), nullable=False)
+
+    goals = db.relationship('Goal', backref='goalcategories')
+
+    def __repr__(self):
+
+        return "<goalcat_id=%s goalcat_name=%s>" % (self.goalcat_id, self.goalcat_name)
+
+
+
+
+
+#need association tables , need class to track completion
+# class LinkGoalTask(db.Model):
+# """Association Model to connect Goals and Categories"""
+
+#class TrackCompletion(db.Model):
+#       """Link GOal and task with users"""
+>>>>>>> upstream/master
 
 #class Calendar/info if any
+
 
 
 #need to add to server.py as part of delete task-
@@ -218,6 +348,15 @@ class GoalCompletion(db.Model):
 
 #         user = User.check_by_user_id(user_id)
          # goals = Goal.check_by_user_id(user_id)
+=======
+
+
+
+
+
+
+>>>>>>> upstream/master
+
 
 
 
@@ -256,13 +395,39 @@ class GoalCompletion(db.Model):
 #     def __repr__(self):
 
 #         return "<goalcat_id=%s goalcat_name=%s>" % (self.goalcat_id, self.goalcat_name)
+=======
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> upstream/master
 
 
 
 ############################################################################
 
 def init_app():
+
     from flask import Flask
+=======
+>>>>>>> upstream/master
     from server import app
 
     connect_to_db(app)
@@ -280,6 +445,7 @@ def connect_to_db(app):
 
 if __name__ == "__main__":
     #To utilize database interactively
+
     from flask import Flask
     from server import app
 
@@ -287,3 +453,11 @@ if __name__ == "__main__":
 
     connect_to_db(app)
     print "Connected to DB."
+=======
+    from server import app
+
+    # Need to add to db.create_all()
+    connect_to_db(app)
+
+    print "Connected to DB."
+>>>>>>> upstream/master
